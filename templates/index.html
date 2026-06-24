@@ -1,0 +1,112 @@
+{% extends "base.html" %}
+
+{% block title %}محليّ .EG - تسوق من محلات بلدك{% endblock %}
+
+{% block content %}
+
+<!-- ===== بنر ترحيبي ===== -->
+<div class="bg-gradient-to-br from-emerald-800 to-emerald-600 text-white rounded-3xl p-8 mb-8 relative overflow-hidden">
+    <div class="absolute top-0 right-0 w-64 h-64 bg-white/5 rounded-full -translate-y-16 translate-x-16"></div>
+    <div class="absolute bottom-0 left-0 w-48 h-48 bg-white/5 rounded-full translate-y-16 -translate-x-16"></div>
+    <div class="relative">
+        <span class="bg-emerald-500/30 text-emerald-200 px-3 py-1 rounded-full text-xs font-bold border border-emerald-400/20 inline-block mb-3">
+            <i class="fas fa-store ml-1"></i> من منطقتك وإليك
+        </span>
+        <h2 class="text-3xl font-black mb-3">تسوق من محلات بلدك <br>والتوصيل لباب البيت</h2>
+        <p class="text-emerald-100 max-w-lg text-sm leading-relaxed">
+            نربطك بأفضل التجار في مركزك وقريتك. اطلب البضائع بالكميات اللي تحتاجها، ونحن ننسق الشحن والتوصيل.
+        </p>
+    </div>
+</div>
+
+<!-- ===== البحث والتصفية ===== -->
+<div class="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm mb-8">
+    <div class="flex flex-col md:flex-row gap-4">
+        <!-- بحث -->
+        <div class="flex-1 relative">
+            <i class="fas fa-search absolute right-3.5 top-1/2 -translate-y-1/2 text-slate-400"></i>
+            <form method="GET" action="/" class="w-full">
+                <input type="text" 
+                       name="search" 
+                       placeholder="ابحث عن منتج..." 
+                       value="{{ search_query or '' }}"
+                       class="w-full pr-10 pl-4 py-2.5 rounded-xl border border-slate-200 focus:outline-none focus:border-emerald-500 text-sm bg-slate-50">
+            </form>
+        </div>
+        
+        <!-- تصفية -->
+        <div class="flex flex-wrap gap-2">
+            <a href="/" class="px-4 py-2 rounded-xl text-sm font-bold border {% if not selected_category %}bg-emerald-600 text-white border-emerald-600{% else %}bg-slate-50 text-slate-700 border-slate-200 hover:bg-slate-100{% endif %} transition-all">
+                الكل
+            </a>
+            {% for category in categories %}
+            <a href="/?category={{ category }}" class="px-4 py-2 rounded-xl text-sm font-bold border {% if selected_category == category %}bg-emerald-600 text-white border-emerald-600{% else %}bg-slate-50 text-slate-700 border-slate-200 hover:bg-slate-100{% endif %} transition-all">
+                {{ category }}
+            </a>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+
+<!-- ===== قائمة المنتجات ===== -->
+{% if products %}
+<div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+    {% for product in products %}
+    <div class="bg-white rounded-2xl border border-slate-200 overflow-hidden shadow-sm hover:shadow-md transition-all group">
+        <!-- صورة المنتج -->
+        <div class="h-48 overflow-hidden bg-slate-100 relative">
+            <img src="{{ url_for('static', filename='uploads/' + product.image_filename) if product.image_filename else 'https://images.unsplash.com/photo-1546213290-e1b492ab3aea?auto=format&fit=crop&w=300&q=80' }}" 
+                 alt="{{ product.name }}"
+                 class="w-full h-full object-cover group-hover:scale-105 transition-all duration-300">
+            <span class="absolute top-3 right-3 bg-white/95 px-2.5 py-1 rounded-full text-[10px] font-bold text-slate-700 border border-slate-100 shadow-sm">
+                {{ product.category }}
+            </span>
+            {% if product.quantity <= 3 and product.quantity > 0 %}
+            <span class="absolute bottom-3 left-3 bg-rose-500 text-white text-[10px] font-black px-2 py-0.5 rounded-md">
+                متبقي {{ product.quantity }} فقط!
+            </span>
+            {% endif %}
+            {% if product.quantity == 0 %}
+            <div class="absolute inset-0 bg-slate-900/60 flex items-center justify-center">
+                <span class="bg-rose-600 text-white font-black text-xs px-3 py-1.5 rounded-lg">نفذت الكمية</span>
+            </div>
+            {% endif %}
+        </div>
+        
+        <!-- تفاصيل المنتج -->
+        <div class="p-4">
+            <div class="text-[10px] text-slate-500 font-bold mb-1">
+                <i class="fas fa-store ml-1"></i> {{ product.merchant.name }}
+            </div>
+            <h3 class="font-bold text-sm mb-1 line-clamp-1">{{ product.name }}</h3>
+            <p class="text-xs text-slate-400 line-clamp-2 h-8 mb-2">{{ product.description or '' }}</p>
+            
+            <div class="flex items-center justify-between border-t border-slate-100 pt-3">
+                <span class="text-lg font-black text-emerald-600">{{ product.price }} <span class="text-xs text-slate-500">ج.م</span></span>
+                
+                {% if product.quantity > 0 %}
+                <form action="{{ url_for('add_to_cart', product_id=product.id) }}" method="POST" class="flex items-center gap-2">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                    <input type="number" name="qty" value="1" min="1" max="{{ product.quantity }}" 
+                           class="w-12 text-center border rounded-lg p-1 text-sm">
+                    <button type="submit" class="bg-emerald-600 hover:bg-emerald-700 text-white px-3 py-1.5 rounded-lg text-xs font-bold transition-all">
+                        <i class="fas fa-cart-plus ml-1"></i> طلب
+                    </button>
+                </form>
+                {% else %}
+                <span class="text-slate-400 text-sm font-bold">غير متوفر</span>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+{% else %}
+<div class="text-center py-16 bg-white rounded-3xl border border-dashed border-slate-300">
+    <i class="fas fa-box-open text-6xl text-slate-300 mb-4"></i>
+    <h3 class="text-lg font-bold text-slate-700">لا توجد منتجات متاحة حالياً</h3>
+    <p class="text-sm text-slate-400">جرب البحث عن منتج آخر أو تابعنا لاستقبال منتجات جديدة</p>
+</div>
+{% endif %}
+
+{% endblock %}

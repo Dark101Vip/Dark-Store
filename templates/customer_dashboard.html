@@ -1,0 +1,100 @@
+{% extends "base.html" %}
+
+{% block title %}لوحة تحكم العميل - محليّ .EG{% endblock %}
+
+{% block content %}
+
+<div class="max-w-4xl mx-auto">
+    <div class="bg-white rounded-3xl border border-slate-200 shadow-sm p-8 mb-8">
+        <div class="flex items-center gap-4">
+            <div class="bg-emerald-100 p-4 rounded-2xl text-emerald-600">
+                <i class="fas fa-user-circle text-3xl"></i>
+            </div>
+            <div>
+                <h2 class="text-2xl font-black text-slate-800">مرحباً {{ current_user.name }} 👋</h2>
+                <p class="text-sm text-slate-400">هذه لوحة تحكم العميل - يمكنك متابعة طلباتك هنا</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- ===== الإحصائيات ===== -->
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
+        <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm text-center">
+            <div class="text-2xl font-black text-emerald-600">{{ orders|length }}</div>
+            <div class="text-xs text-slate-400 font-bold">إجمالي الطلبات</div>
+        </div>
+        <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm text-center">
+            <div class="text-2xl font-black text-amber-600">
+                {{ orders|selectattr('status', 'equalto', 'pending')|list|length }}
+            </div>
+            <div class="text-xs text-slate-400 font-bold">طلبات قيد الانتظار</div>
+        </div>
+        <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm text-center">
+            <div class="text-2xl font-black text-emerald-600">
+                {{ orders|selectattr('status', 'equalto', 'completed')|list|length }}
+            </div>
+            <div class="text-xs text-slate-400 font-bold">طلبات مكتملة</div>
+        </div>
+    </div>
+
+    <!-- ===== قائمة الطلبات ===== -->
+    <div class="bg-white rounded-3xl border border-slate-200 shadow-sm overflow-hidden">
+        <div class="p-6 border-b border-slate-200">
+            <h3 class="font-black text-slate-800">
+                <i class="fas fa-clipboard-list ml-2"></i> طلباتي
+            </h3>
+        </div>
+
+        {% if orders %}
+        <div class="divide-y divide-slate-100">
+            {% for order in orders %}
+            <div class="p-6 hover:bg-slate-50 transition-all">
+                <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                    <div>
+                        <div class="flex items-center gap-3">
+                            <span class="font-extrabold text-sm">#{{ order.id }}</span>
+                            <span class="text-xs text-slate-400">{{ order.created_at.strftime('%Y-%m-%d %H:%M') }}</span>
+                            <span class="px-2.5 py-0.5 rounded-full text-[10px] font-bold
+                                {% if order.status == 'pending' %}bg-amber-100 text-amber-800
+                                {% elif order.status == 'processing' %}bg-blue-100 text-blue-800
+                                {% elif order.status == 'shipped' %}bg-purple-100 text-purple-800
+                                {% elif order.status == 'completed' %}bg-emerald-100 text-emerald-800
+                                {% elif order.status == 'cancelled' %}bg-rose-100 text-rose-800{% endif %}">
+                                {% if order.status == 'pending' %}قيد الانتظار
+                                {% elif order.status == 'processing' %}جاري التجهيز
+                                {% elif order.status == 'shipped' %}تم الشحن
+                                {% elif order.status == 'completed' %}تم التوصيل
+                                {% elif order.status == 'cancelled' %}ملغي{% endif %}
+                            </span>
+                        </div>
+                        <div class="text-xs text-slate-500 mt-2">
+                            <i class="fas fa-map-marker-alt ml-1"></i> {{ order.center }} - {{ order.village }}
+                            <span class="mr-3">{{ order.address_details }}</span>
+                        </div>
+                        <div class="text-xs text-slate-500 mt-1">
+                            <span class="font-bold">المنتجات:</span>
+                            {% for item in order.items %}
+                            <span class="ml-2">{{ item.product_name }} ({{ item.qty }})</span>
+                            {% endfor %}
+                        </div>
+                    </div>
+                    
+                    <div class="text-lg font-black text-emerald-600">{{ order.total }} ج.م</div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        {% else %}
+        <div class="text-center py-16 text-slate-400">
+            <i class="fas fa-inbox text-5xl block mb-4 text-slate-300"></i>
+            <h4 class="font-bold text-slate-700">لا توجد طلبات</h4>
+            <p class="text-sm">ابدأ بالتسوق من الصفحة الرئيسية</p>
+            <a href="/" class="inline-block mt-4 bg-emerald-600 text-white px-6 py-2 rounded-xl font-bold text-sm hover:bg-emerald-700 transition-all">
+                <i class="fas fa-store ml-2"></i> ابدأ التسوق
+            </a>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+{% endblock %}

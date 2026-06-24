@@ -1,0 +1,222 @@
+{% extends "base.html" %}
+
+{% block title %}لوحة تحكم التاجر - محليّ .EG{% endblock %}
+
+{% block content %}
+
+<!-- ===== حالة الاشتراك ===== -->
+<div class="bg-white rounded-3xl border border-slate-200 shadow-sm overflow-hidden mb-8">
+    <div class="bg-gradient-to-r from-slate-900 to-slate-800 text-white p-6">
+        <div class="flex flex-col md:flex-row items-center justify-between gap-4">
+            <div class="flex items-center gap-4">
+                <div class="bg-amber-500 p-3 rounded-2xl text-slate-900">
+                    <i class="fas fa-store text-xl"></i>
+                </div>
+                <div>
+                    <h3 class="text-xl font-black">{{ current_user.name }}</h3>
+                    <p class="text-xs text-slate-400">تاجر معتمد | {{ current_user.phone }}</p>
+                </div>
+            </div>
+            
+            <div class="flex items-center gap-3">
+                {% if is_subscribed %}
+                <span class="bg-emerald-500/20 text-emerald-400 border border-emerald-500/40 px-4 py-1.5 rounded-full text-sm font-bold">
+                    <i class="fas fa-check-circle ml-1"></i> مفعل حتى {{ current_user.subscription_expiry.strftime('%Y-%m-%d') }}
+                </span>
+                {% else %}
+                <span class="bg-rose-500/20 text-rose-400 border border-rose-500/40 px-4 py-1.5 rounded-full text-sm font-bold">
+                    <i class="fas fa-exclamation-circle ml-1"></i> غير مفعل
+                </span>
+                <a href="{{ url_for('merchant_subscribe') }}" class="bg-amber-500 hover:bg-amber-400 text-slate-900 px-4 py-1.5 rounded-xl font-bold text-sm transition-all">
+                    <i class="fas fa-credit-card ml-1"></i> اشتراك 50 ج.م
+                </a>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    
+    <!-- إحصائيات -->
+    <div class="p-6 bg-slate-50 border-b border-slate-100">
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+            <div class="bg-white p-4 rounded-2xl border border-slate-200 text-center">
+                <div class="text-emerald-600 text-2xl font-black">{{ stats.total_products }}</div>
+                <div class="text-xs text-slate-500 font-bold">منتجاتي</div>
+            </div>
+            <div class="bg-white p-4 rounded-2xl border border-slate-200 text-center">
+                <div class="text-indigo-600 text-2xl font-black">{{ stats.total_orders }}</div>
+                <div class="text-xs text-slate-500 font-bold">إجمالي الطلبات</div>
+            </div>
+            <div class="bg-white p-4 rounded-2xl border border-slate-200 text-center">
+                <div class="text-amber-600 text-2xl font-black">{{ stats.pending_orders }}</div>
+                <div class="text-xs text-slate-500 font-bold">طلبات معلقة</div>
+            </div>
+            <div class="bg-white p-4 rounded-2xl border border-slate-200 text-center">
+                <div class="text-emerald-600 text-2xl font-black">{{ stats.total_revenue }} ج.م</div>
+                <div class="text-xs text-slate-500 font-bold">إجمالي الإيرادات</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ===== إضافة منتج جديد ===== -->
+{% if is_subscribed %}
+<div class="bg-white rounded-3xl border border-slate-200 shadow-sm p-6 mb-8">
+    <h3 class="font-black text-slate-800 mb-4 flex items-center gap-2">
+        <i class="fas fa-plus-circle text-emerald-600"></i> إضافة منتج جديد
+    </h3>
+    
+    <form method="POST" action="{{ url_for('merchant_add_product') }}" enctype="multipart/form-data" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <div>
+            <label class="text-sm font-bold text-slate-600 block mb-1">اسم المنتج *</label>
+            <input type="text" name="name" required class="w-full px-4 py-2.5 rounded-xl border border-slate-200 focus:outline-none focus:border-emerald-500 text-sm">
+        </div>
+        
+        <div>
+            <label class="text-sm font-bold text-slate-600 block mb-1">القسم *</label>
+            <select name="category" required class="w-full px-4 py-2.5 rounded-xl border border-slate-200 focus:outline-none focus:border-emerald-500 text-sm">
+                <option value="مواد غذائية">مواد غذائية</option>
+                <option value="أحذية ومصنوعات جلدية">أحذية ومصنوعات جلدية</option>
+                <option value="ملابس وأزياء">ملابس وأزياء</option>
+                <option value="دهانات وحديد">دهانات وحديد</option>
+                <option value="مستلزمات منزلية">مستلزمات منزلية</option>
+            </select>
+        </div>
+        
+        <div>
+            <label class="text-sm font-bold text-slate-600 block mb-1">السعر (ج.م) *</label>
+            <input type="number" name="price" required step="0.01" min="0" class="w-full px-4 py-2.5 rounded-xl border border-slate-200 focus:outline-none focus:border-emerald-500 text-sm">
+        </div>
+        
+        <div>
+            <label class="text-sm font-bold text-slate-600 block mb-1">الكمية المتوفرة *</label>
+            <input type="number" name="quantity" required min="0" class="w-full px-4 py-2.5 rounded-xl border border-slate-200 focus:outline-none focus:border-emerald-500 text-sm">
+        </div>
+        
+        <div class="md:col-span-2">
+            <label class="text-sm font-bold text-slate-600 block mb-1">وصف المنتج (اختياري)</label>
+            <textarea name="description" rows="2" class="w-full px-4 py-2.5 rounded-xl border border-slate-200 focus:outline-none focus:border-emerald-500 text-sm resize-none"></textarea>
+        </div>
+        
+        <div class="md:col-span-2">
+            <label class="text-sm font-bold text-slate-600 block mb-1">صورة المنتج (اختياري)</label>
+            <input type="file" name="product_image" accept="image/*" 
+                   class="w-full px-4 py-2.5 rounded-xl border border-slate-200 focus:outline-none focus:border-emerald-500 text-sm file:mr-4 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-sm file:font-bold file:bg-emerald-50 file:text-emerald-700 hover:file:bg-emerald-100">
+            <p class="text-[10px] text-slate-400 mt-1">الصيغ المدعومة: PNG, JPG, JPEG, GIF, WEBP (حد أقصى 5 ميجابايت)</p>
+        </div>
+        
+        <div class="md:col-span-2">
+            <button type="submit" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-2.5 rounded-xl transition-all text-sm">
+                <i class="fas fa-plus ml-2"></i> عرض المنتج للبيع
+            </button>
+        </div>
+    </form>
+</div>
+{% endif %}
+
+<!-- ===== قائمة المنتجات ===== -->
+<div class="bg-white rounded-3xl border border-slate-200 shadow-sm p-6">
+    <h3 class="font-black text-slate-800 mb-4 flex items-center justify-between">
+        <span><i class="fas fa-box ml-2"></i> منتجاتي ({{ products|length }})</span>
+        <span class="text-xs text-slate-400 font-normal">المنتجات المعروضة تظهر للزبائن فوراً</span>
+    </h3>
+    
+    {% if products %}
+    <div class="space-y-3">
+        {% for product in products %}
+        <div class="flex items-center gap-4 p-3 bg-slate-50 rounded-2xl border border-slate-100 hover:border-slate-200 transition-all">
+            <img src="{{ url_for('static', filename='uploads/' + product.image_filename) if product.image_filename else 'https://images.unsplash.com/photo-1546213290-e1b492ab3aea?auto=format&fit=crop&w=300&q=80' }}" 
+                 alt="{{ product.name }}"
+                 class="w-16 h-16 object-cover rounded-xl border border-slate-200">
+            <div class="flex-1">
+                <h4 class="font-bold text-sm">{{ product.name }}</h4>
+                <div class="flex gap-4 text-xs text-slate-500">
+                    <span>{{ product.category }}</span>
+                    <span class="font-black text-emerald-600">{{ product.price }} ج.م</span>
+                    <span>المتبقي: <strong class="{% if product.quantity == 0 %}text-rose-600{% else %}text-slate-800{% endif %}">{{ product.quantity }}</strong></span>
+                </div>
+            </div>
+            <form method="POST" action="{{ url_for('merchant_delete_product', product_id=product.id) }}" 
+                  onsubmit="return confirm('هل أنت متأكد من حذف هذا المنتج؟')">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                <button type="submit" class="text-rose-500 hover:text-rose-700 hover:bg-rose-50 p-2 rounded-xl transition-all">
+                    <i class="fas fa-trash"></i>
+                </button>
+            </form>
+        </div>
+        {% endfor %}
+    </div>
+    {% else %}
+    <div class="text-center py-12 border-2 border-dashed border-slate-200 rounded-3xl">
+        <i class="fas fa-box-open text-4xl text-slate-300 mb-3"></i>
+        <h4 class="font-bold text-slate-700">ليس لديك منتجات معروضة</h4>
+        <p class="text-xs text-slate-400">أضف منتجك الأول من النموذج أعلاه</p>
+    </div>
+    {% endif %}
+</div>
+
+<!-- ===== قائمة الطلبات الواردة ===== -->
+<div class="bg-white rounded-3xl border border-slate-200 shadow-sm p-6 mt-8">
+    <h3 class="font-black text-slate-800 mb-4">
+        <i class="fas fa-clipboard-list ml-2"></i> طلبات وردت لمنتجاتك
+    </h3>
+    
+    {% if orders %}
+    <div class="space-y-3">
+        {% for order in orders %}
+        <div class="p-4 bg-slate-50 rounded-2xl border border-slate-100">
+            <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                <div>
+                    <span class="font-bold text-sm">طلب #{{ order.id }}</span>
+                    <span class="text-xs text-slate-400 mr-3">{{ order.created_at.strftime('%Y-%m-%d %H:%M') }}</span>
+                    <span class="px-2 py-0.5 rounded-full text-[10px] font-bold
+                        {% if order.status == 'pending' %}bg-amber-100 text-amber-800
+                        {% elif order.status == 'accepted' %}bg-green-100 text-green-800
+                        {% elif order.status == 'rejected' %}bg-rose-100 text-rose-800
+                        {% elif order.status == 'shipped' %}bg-purple-100 text-purple-800
+                        {% elif order.status == 'completed' %}bg-emerald-100 text-emerald-800
+                        {% elif order.status == 'cancelled' %}bg-red-100 text-red-800{% endif %}">
+                        {% if order.status == 'pending' %}قيد الانتظار
+                        {% elif order.status == 'accepted' %}مقبول
+                        {% elif order.status == 'rejected' %}مرفوض
+                        {% elif order.status == 'shipped' %}تم الشحن
+                        {% elif order.status == 'completed' %}تم التوصيل
+                        {% elif order.status == 'cancelled' %}ملغي{% endif %}
+                    </span>
+                </div>
+                <div class="text-sm font-black text-emerald-600">{{ order.total }} ج.م</div>
+            </div>
+            
+            <div class="text-xs text-slate-500 mt-2">
+                <i class="fas fa-user ml-1"></i> {{ order.customer_name }}
+                <i class="fas fa-phone ml-3"></i> {{ order.customer_phone }}
+                <i class="fas fa-map-marker-alt ml-3"></i> {{ order.center }} - {{ order.village }}
+            </div>
+            
+            <!-- أزرار تغيير الحالة للتاجر -->
+            <form method="POST" action="{{ url_for('merchant_update_order_status', order_id=order.id) }}" class="mt-3 flex flex-wrap gap-2">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                <select name="status" class="text-sm border rounded-xl px-3 py-1.5 bg-white focus:outline-none focus:border-emerald-500">
+                    <option value="pending" {% if order.status == 'pending' %}selected{% endif %}>قيد الانتظار</option>
+                    <option value="accepted" {% if order.status == 'accepted' %}selected{% endif %}>قبول</option>
+                    <option value="rejected" {% if order.status == 'rejected' %}selected{% endif %}>رفض</option>
+                    <option value="shipped" {% if order.status == 'shipped' %}selected{% endif %}>تم الشحن</option>
+                    <option value="completed" {% if order.status == 'completed' %}selected{% endif %}>تم التوصيل</option>
+                    <option value="cancelled" {% if order.status == 'cancelled' %}selected{% endif %}>إلغاء</option>
+                </select>
+                <button type="submit" class="bg-emerald-600 hover:bg-emerald-700 text-white text-xs px-4 py-1.5 rounded-xl transition-all">
+                    <i class="fas fa-save ml-1"></i> تحديث الحالة
+                </button>
+            </form>
+        </div>
+        {% endfor %}
+    </div>
+    {% else %}
+    <div class="text-center py-8 text-slate-400 text-sm">
+        <i class="fas fa-inbox text-3xl block mb-2"></i>
+        لا توجد طلبات لمنتجاتك حالياً
+    </div>
+    {% endif %}
+</div>
+
+{% endblock %}

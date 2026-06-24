@@ -1,0 +1,82 @@
+{% extends "base.html" %}
+
+{% block title %}إنشاء حساب - محليّ .EG{% endblock %}
+
+{% block content %}
+<div class="max-w-md mx-auto bg-white rounded-3xl border border-slate-200 shadow-sm p-8">
+    <div class="text-center mb-8">
+        <div class="bg-emerald-100 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
+            <i class="fas fa-user-plus text-emerald-600 text-2xl"></i>
+        </div>
+        <h2 class="text-2xl font-black text-slate-800">حساب جديد 🚀</h2>
+        <p class="text-sm text-slate-400">سجل الآن وابدأ بالتسوق أو البيع</p>
+    </div>
+    
+    <form method="POST" action="{{ url_for('register') }}">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <div class="space-y-4">
+            <div>
+                <label class="text-sm font-bold text-slate-700 block mb-1">الاسم بالكامل</label>
+                <input type="text" 
+                       name="name" 
+                       required
+                       placeholder="مثال: أحمد محمد"
+                       class="w-full px-4 py-3 rounded-xl border border-slate-200 focus:outline-none focus:border-emerald-500 transition-all">
+            </div>
+            
+            <div>
+                <label class="text-sm font-bold text-slate-700 block mb-1">رقم الهاتف</label>
+                <input type="tel" 
+                       name="phone" 
+                       required
+                       placeholder="مثال: 01012345678"
+                       class="w-full px-4 py-3 rounded-xl border border-slate-200 focus:outline-none focus:border-emerald-500 transition-all">
+            </div>
+            
+            <div>
+                <label class="text-sm font-bold text-slate-700 block mb-1">البريد الإلكتروني (اختياري)</label>
+                <input type="email" 
+                       name="email" 
+                       placeholder="example@gmail.com"
+                       class="w-full px-4 py-3 rounded-xl border border-slate-200 focus:outline-none focus:border-emerald-500 transition-all">
+            </div>
+            
+            <div>
+                <label class="text-sm font-bold text-slate-700 block mb-1">نوع الحساب</label>
+                <select name="role" class="w-full px-4 py-3 rounded-xl border border-slate-200 focus:outline-none focus:border-emerald-500 transition-all">
+                    <option value="customer">عميل (تسوق)</option>
+                    <option value="merchant">تاجر (بيع)</option>
+                </select>
+            </div>
+            
+            <div>
+                <label class="text-sm font-bold text-slate-700 block mb-1">كلمة المرور</label>
+                <input type="password" 
+                       name="password" 
+                       required
+                       placeholder="•••••••• (6 أحرف على الأقل)"
+                       class="w-full px-4 py-3 rounded-xl border border-slate-200 focus:outline-none focus:border-emerald-500 transition-all">
+            </div>
+            
+            <div>
+                <label class="text-sm font-bold text-slate-700 block mb-1">تأكيد كلمة المرور</label>
+                <input type="password" 
+                       name="confirm_password" 
+                       required
+                       placeholder="••••••••"
+                       class="w-full px-4 py-3 rounded-xl border border-slate-200 focus:outline-none focus:border-emerald-500 transition-all">
+            </div>
+            
+            <button type="submit" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-3 rounded-xl transition-all">
+                <i class="fas fa-user-plus ml-2"></i> إنشاء حساب
+            </button>
+        </div>
+    </form>
+    
+    <div class="text-center mt-6">
+        <p class="text-sm text-slate-400">
+            لديك حساب بالفعل؟ <a href="{{ url_for('login') }}" class="text-emerald-600 font-bold hover:underline">تسجيل الدخول</a>
+        </p>
+    </div>
+</div>
+{% endblock %}

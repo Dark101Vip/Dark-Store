@@ -1,0 +1,67 @@
+{% extends "base.html" %}
+
+{% block title %}اشتراك شهري - محليّ .EG{% endblock %}
+
+{% block content %}
+
+<div class="max-w-md mx-auto">
+    <div class="bg-white rounded-3xl border border-slate-200 shadow-sm p-8">
+        <div class="text-center mb-6">
+            <div class="bg-emerald-100 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
+                <i class="fas fa-credit-card text-emerald-600 text-2xl"></i>
+            </div>
+            <h2 class="text-2xl font-black text-slate-800">اشتراك شهري</h2>
+            <p class="text-sm text-slate-400">50 جنيهاً مصرياً / شهر</p>
+        </div>
+        
+        <!-- رقم فودافون كاش -->
+        <div class="bg-emerald-50 border border-emerald-200 rounded-2xl p-4 text-center mb-6">
+            <p class="text-sm text-slate-600 font-bold">📱 ارسل المبلغ على رقم فودافون كاش:</p>
+            <p class="text-2xl font-black text-emerald-600 mt-1">{{ vodafone_number }}</p>
+            <p class="text-xs text-slate-400 mt-1">بعد التحويل، أدخل بيانات الدفع أدناه</p>
+        </div>
+        
+        <form method="POST" action="{{ url_for('merchant_subscribe') }}" class="space-y-4">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            <div>
+                <label class="text-sm font-bold text-slate-700 block mb-1">رقم الهاتف المرسل منه *</label>
+                <input type="tel" name="sender_phone" required 
+                       placeholder="مثال: 01012345678"
+                       class="w-full px-4 py-3 rounded-xl border border-slate-200 focus:outline-none focus:border-emerald-500 transition-all">
+            </div>
+            
+            <div>
+                <label class="text-sm font-bold text-slate-700 block mb-1">اسم المرسل *</label>
+                <input type="text" name="sender_name" required 
+                       placeholder="الاسم كما في البطاقة"
+                       class="w-full px-4 py-3 rounded-xl border border-slate-200 focus:outline-none focus:border-emerald-500 transition-all">
+            </div>
+            
+            <div>
+                <label class="text-sm font-bold text-slate-700 block mb-1">رقم العملية (من رسالة فودافون) *</label>
+                <input type="text" name="transaction_id" required 
+                       placeholder="مثال: 1234567890"
+                       class="w-full px-4 py-3 rounded-xl border border-slate-200 focus:outline-none focus:border-emerald-500 transition-all">
+            </div>
+            
+            <div>
+                <label class="text-sm font-bold text-slate-700 block mb-1">ملاحظات إضافية (اختياري)</label>
+                <textarea name="notes" rows="2" 
+                          placeholder="أي معلومات إضافية"
+                          class="w-full px-4 py-3 rounded-xl border border-slate-200 focus:outline-none focus:border-emerald-500 transition-all resize-none"></textarea>
+            </div>
+            
+            <button type="submit" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-3 rounded-xl transition-all">
+                <i class="fas fa-paper-plane ml-2"></i> إرسال طلب الدفع
+            </button>
+        </form>
+        
+        <div class="text-center mt-4">
+            <a href="{{ url_for('merchant_dashboard') }}" class="text-sm text-slate-400 hover:text-slate-600">
+                <i class="fas fa-arrow-right ml-1"></i> العودة للوحة التحكم
+            </a>
+        </div>
+    </div>
+</div>
+
+{% endblock %}

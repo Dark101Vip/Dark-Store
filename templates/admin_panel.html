@@ -1,0 +1,210 @@
+{% extends "base.html" %}
+
+{% block title %}لوحة تحكم المدير - محليّ .EG{% endblock %}
+
+{% block content %}
+
+<div class="mb-6 flex items-center justify-between">
+    <h2 class="text-2xl font-black text-slate-800">
+        <i class="fas fa-user-shield ml-2 text-indigo-600"></i> لوحة تحكم المدير
+    </h2>
+    <a href="{{ url_for('admin_logout') }}" class="text-sm text-rose-600 hover:text-rose-700 font-bold">
+        <i class="fas fa-sign-out-alt ml-1"></i> تسجيل خروج
+    </a>
+</div>
+
+<!-- ===== الإحصائيات ===== -->
+<div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
+    <div class="bg-white p-5 rounded-3xl border border-slate-200 shadow-sm">
+        <div class="flex items-center justify-between">
+            <div>
+                <span class="text-xs font-bold text-slate-400 block">طلبات دفع معلقة</span>
+                <span class="text-2xl font-black text-amber-600">{{ stats.pending_payments }}</span>
+            </div>
+            <div class="bg-amber-100 text-amber-600 p-3 rounded-2xl">
+                <i class="fas fa-money-bill-wave text-xl"></i>
+            </div>
+        </div>
+    </div>
+    
+    <div class="bg-white p-5 rounded-3xl border border-slate-200 shadow-sm">
+        <div class="flex items-center justify-between">
+            <div>
+                <span class="text-xs font-bold text-slate-400 block">إجمالي الطلبات</span>
+                <span class="text-2xl font-black text-slate-800">{{ stats.total_orders }}</span>
+            </div>
+            <div class="bg-amber-100 text-amber-600 p-3 rounded-2xl">
+                <i class="fas fa-clipboard-list text-xl"></i>
+            </div>
+        </div>
+    </div>
+    
+    <div class="bg-white p-5 rounded-3xl border border-slate-200 shadow-sm">
+        <div class="flex items-center justify-between">
+            <div>
+                <span class="text-xs font-bold text-slate-400 block">إجمالي الإيرادات</span>
+                <span class="text-2xl font-black text-emerald-600">{{ stats.total_revenue }} ج.م</span>
+            </div>
+            <div class="bg-emerald-100 text-emerald-600 p-3 rounded-2xl">
+                <i class="fas fa-chart-line text-xl"></i>
+            </div>
+        </div>
+    </div>
+    
+    <div class="bg-white p-5 rounded-3xl border border-slate-200 shadow-sm">
+        <div class="flex items-center justify-between">
+            <div>
+                <span class="text-xs font-bold text-slate-400 block">إجمالي المستخدمين</span>
+                <span class="text-2xl font-black text-slate-800">{{ stats.total_users }}</span>
+            </div>
+            <div class="bg-indigo-100 text-indigo-600 p-3 rounded-2xl">
+                <i class="fas fa-users text-xl"></i>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ===== طلبات الدفع المعلقة ===== -->
+<div class="bg-white rounded-3xl border border-slate-200 shadow-sm p-6 mb-8">
+    <h3 class="font-black text-slate-800 mb-4 flex items-center gap-2">
+        <i class="fas fa-clock text-amber-600"></i> طلبات الدفع المعلقة
+        <span class="text-sm font-normal text-slate-400 mr-2">({{ pending_payments|length }})</span>
+    </h3>
+    
+    {% if pending_payments %}
+    <div class="space-y-4">
+        {% for payment in pending_payments %}
+        <div class="p-4 bg-amber-50 rounded-2xl border border-amber-200">
+            <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                <div>
+                    <div class="flex items-center gap-3">
+                        <span class="font-bold text-sm">طلب #{{ payment.id }}</span>
+                        <span class="text-xs text-slate-400">{{ payment.created_at.strftime('%Y-%m-%d %H:%M') }}</span>
+                    </div>
+                    <div class="text-sm mt-2 space-y-1">
+                        <p><span class="text-slate-500">التاجر:</span> <span class="font-bold">{{ payment.merchant.name }}</span></p>
+                        <p><span class="text-slate-500">هاتف التاجر:</span> {{ payment.merchant.phone }}</p>
+                        <p><span class="text-slate-500">المرسل:</span> {{ payment.sender_name }} ({{ payment.sender_phone }})</p>
+                        <p><span class="text-slate-500">رقم العملية:</span> <span class="font-mono text-sm">{{ payment.transaction_id }}</span></p>
+                        {% if payment.notes %}
+                        <p><span class="text-slate-500">ملاحظات:</span> {{ payment.notes }}</p>
+                        {% endif %}
+                    </div>
+                </div>
+                <div class="flex gap-2">
+                    <form method="POST" action="{{ url_for('admin_approve_payment', payment_id=payment.id) }}" 
+                          onsubmit="return confirm('تأكيد تفعيل اشتراك {{ payment.merchant.name }}؟')">
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                        <button type="submit" class="bg-emerald-600 hover:bg-emerald-700 text-white font-bold px-4 py-2 rounded-xl text-sm transition-all">
+                            <i class="fas fa-check ml-1"></i> تفعيل
+                        </button>
+                    </form>
+                    <form method="POST" action="{{ url_for('admin_reject_payment', payment_id=payment.id) }}"
+                          onsubmit="return confirm('تأكيد رفض طلب الدفع؟')">
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                        <button type="submit" class="bg-rose-600 hover:bg-rose-700 text-white font-bold px-4 py-2 rounded-xl text-sm transition-all">
+                            <i class="fas fa-times ml-1"></i> رفض
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    {% else %}
+    <div class="text-center py-8 text-slate-400 text-sm">
+        <i class="fas fa-check-circle text-3xl block mb-2 text-emerald-500"></i>
+        لا توجد طلبات دفع معلقة
+    </div>
+    {% endif %}
+</div>
+
+<!-- ===== الطلبات ===== -->
+<div class="bg-white rounded-3xl border border-slate-200 shadow-sm p-6 mb-8">
+    <h3 class="font-black text-slate-800 mb-4 flex items-center gap-2">
+        <i class="fas fa-tasks text-indigo-600"></i> جميع الطلبات
+        <span class="text-sm font-normal text-slate-400 mr-2">({{ stats.total_orders }})</span>
+    </h3>
+    
+    {% if orders %}
+    <div class="space-y-3">
+        {% for order in orders[:10] %}
+        <div class="p-3 bg-slate-50 rounded-2xl border border-slate-100">
+            <div class="flex flex-col md:flex-row md:items-center justify-between gap-2">
+                <div>
+                    <span class="font-bold text-sm">طلب #{{ order.id }}</span>
+                    <span class="text-xs text-slate-400 mr-3">{{ order.created_at.strftime('%Y-%m-%d %H:%M') }}</span>
+                    <span class="px-2 py-0.5 rounded-full text-[10px] font-bold
+                        {% if order.status == 'pending' %}bg-amber-100 text-amber-800
+                        {% elif order.status == 'accepted' %}bg-green-100 text-green-800
+                        {% elif order.status == 'rejected' %}bg-rose-100 text-rose-800
+                        {% elif order.status == 'shipped' %}bg-purple-100 text-purple-800
+                        {% elif order.status == 'completed' %}bg-emerald-100 text-emerald-800
+                        {% elif order.status == 'cancelled' %}bg-red-100 text-red-800{% endif %}">
+                        {% if order.status == 'pending' %}قيد الانتظار
+                        {% elif order.status == 'accepted' %}مقبول
+                        {% elif order.status == 'rejected' %}مرفوض
+                        {% elif order.status == 'shipped' %}تم الشحن
+                        {% elif order.status == 'completed' %}تم التوصيل
+                        {% elif order.status == 'cancelled' %}ملغي{% endif %}
+                    </span>
+                </div>
+                <div class="flex items-center gap-3">
+                    <span class="font-bold text-emerald-600">{{ order.total }} ج.م</span>
+                    <a href="{{ url_for('admin_view_order', order_id=order.id) }}" 
+                       class="text-indigo-600 hover:text-indigo-800 text-sm font-bold">
+                        <i class="fas fa-eye"></i>
+                    </a>
+                </div>
+            </div>
+            <div class="text-xs text-slate-500 mt-1">
+                {{ order.customer_name }} | {{ order.center }} - {{ order.village }}
+            </div>
+        </div>
+        {% endfor %}
+        {% if orders|length > 10 %}
+        <p class="text-center text-xs text-slate-400 mt-2">... و {{ orders|length - 10 }} طلبات أخرى</p>
+        {% endif %}
+    </div>
+    {% else %}
+    <div class="text-center py-8 text-slate-400 text-sm">
+        <i class="fas fa-inbox text-3xl block mb-2"></i>
+        لا توجد طلبات حالياً
+    </div>
+    {% endif %}
+</div>
+
+<!-- ===== المنتجات ===== -->
+<div class="bg-white rounded-3xl border border-slate-200 shadow-sm p-6">
+    <h3 class="font-black text-slate-800 mb-4 flex items-center gap-2">
+        <i class="fas fa-box text-emerald-600"></i> جميع المنتجات
+        <span class="text-sm font-normal text-slate-400 mr-2">({{ stats.total_products }})</span>
+    </h3>
+    
+    {% if products %}
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+        {% for product in products[:6] %}
+        <div class="p-3 bg-slate-50 rounded-2xl border border-slate-100 flex items-center gap-3">
+            <img src="{{ url_for('static', filename='uploads/' + product.image_filename) if product.image_filename else 'https://images.unsplash.com/photo-1546213290-e1b492ab3aea?auto=format&fit=crop&w=300&q=80' }}" 
+                 alt="{{ product.name }}"
+                 class="w-12 h-12 object-cover rounded-xl border border-slate-200">
+            <div class="flex-1 min-w-0">
+                <h4 class="font-bold text-sm truncate">{{ product.name }}</h4>
+                <div class="flex gap-2 text-xs text-slate-500">
+                    <span>{{ product.price }} ج.م</span>
+                    <span>المتبقي: {{ product.quantity }}</span>
+                </div>
+                <p class="text-[10px] text-slate-400 truncate">{{ product.merchant.name }}</p>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    {% else %}
+    <div class="text-center py-8 text-slate-400 text-sm">
+        <i class="fas fa-box-open text-3xl block mb-2"></i>
+        لا توجد منتجات حالياً
+    </div>
+    {% endif %}
+</div>
+
+{% endblock %}

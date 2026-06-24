@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html dir="rtl" lang="ar">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>تسجيل دخول المدير - محليّ .EG</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Tajawal:wght@400;700;900&display=swap');
+        * { font-family: 'Tajawal', sans-serif; }
+    </style>
+</head>
+<body class="bg-slate-100 min-h-screen flex items-center justify-center">
+    <div class="max-w-md w-full mx-4">
+        <div class="bg-white rounded-3xl shadow-xl p-8">
+            <div class="text-center mb-8">
+                <div class="bg-indigo-100 w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <i class="fas fa-user-shield text-indigo-600 text-3xl"></i>
+                </div>
+                <h2 class="text-2xl font-black text-slate-800">لوحة تحكم المدير</h2>
+                <p class="text-sm text-slate-400">أدخل بيانات الدخول للوصول</p>
+            </div>
+            
+            <form method="POST" action="{{ url_for('admin_login') }}" class="space-y-4">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                <div>
+                    <label class="text-sm font-bold text-slate-700 block mb-1">اسم المستخدم</label>
+                    <input type="text" name="username" required 
+                           placeholder="أدخل اسم المستخدم"
+                           class="w-full px-4 py-3 rounded-xl border border-slate-200 focus:outline-none focus:border-indigo-500 transition-all">
+                </div>
+                
+                <div>
+                    <label class="text-sm font-bold text-slate-700 block mb-1">كلمة المرور</label>
+                    <input type="password" name="password" required 
+                           placeholder="••••••••"
+                           class="w-full px-4 py-3 rounded-xl border border-slate-200 focus:outline-none focus:border-indigo-500 transition-all">
+                </div>
+                
+                <button type="submit" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 rounded-xl transition-all">
+                    <i class="fas fa-sign-in-alt ml-2"></i> دخول
+                </button>
+            </form>
+            
+            <div class="text-center mt-4">
+                <p class="text-xs text-slate-400">
+                    <i class="fas fa-lock ml-1"></i> هذه الصفحة خاصة بالمدير فقط
+                </p>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
